@@ -1,29 +1,40 @@
 import PageLayout from '../components/PageLayout';
 import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Modal from '../components/Modal';
+import LogFuelForm from '../components/forms/LogFuelForm';
 
 export default function FuelExpenses() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchLogs = async () => {
+    try {
+      const response = await api.get('/fuel-logs');
+      setLogs(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch fuel logs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const response = await api.get('/fuel-logs');
-        setLogs(response.data.data);
-      } catch (error) {
-        console.error('Failed to fetch fuel logs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchLogs();
   }, []);
+
+  const handleAddSuccess = () => {
+    setIsModalOpen(false);
+    fetchLogs();
+  };
+
   return (
     <PageLayout 
       title="Fuel & Expenses" 
-      action={<button className="bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95">+ Log Fuel</button>}
+      action={<button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95"><Plus size={16} /> Log Fuel</button>}
     >
       <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="overflow-x-auto">
@@ -65,6 +76,10 @@ export default function FuelExpenses() {
           </table>
         </div>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Log Fuel Purchase">
+        <LogFuelForm onSuccess={handleAddSuccess} onCancel={() => setIsModalOpen(false)} />
+      </Modal>
     </PageLayout>
   );
 }

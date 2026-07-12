@@ -1,27 +1,39 @@
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import api from '../utils/api';
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('FLEET_MANAGER');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
     setError('');
     setLoading(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/signup', { email, password, role });
       if (response.data.success) {
         localStorage.setItem('user', JSON.stringify(response.data.data));
         navigate('/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to sign in');
+      setError(err.response?.data?.message || 'Failed to register');
     } finally {
       setLoading(false);
     }
@@ -54,7 +66,7 @@ export default function Login() {
             transition={{ delay: 0.3 }}
             className="text-mutedForeground text-lg font-medium"
           >
-            Smart Transport Operations Platform.
+            Join the Smart Transport Operations Platform.
           </motion.p>
         </div>
       </div>
@@ -67,27 +79,37 @@ export default function Login() {
           className="w-full max-w-md space-y-8 bg-card/50 backdrop-blur border border-border p-8 rounded-3xl shadow-2xl"
         >
           <div>
-            <h2 className="text-2xl font-semibold text-foreground tracking-tight">Welcome back</h2>
-            <p className="text-mutedForeground text-sm mt-2">Sign in to your account to continue</p>
+            <h2 className="text-2xl font-semibold text-foreground tracking-tight">Create an account</h2>
+            <p className="text-mutedForeground text-sm mt-2">Get started with TransitOps</p>
             {error && <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg">{error}</div>}
           </div>
-          <form className="space-y-6" onSubmit={handleLogin}>
+          <form className="space-y-6" onSubmit={handleRegister}>
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-mutedForeground uppercase tracking-widest mb-2">Email Address</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full bg-background border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-mutedForeground/50" placeholder="you@company.com" />
               </div>
               <div>
-                <div className="flex justify-between mb-2">
-                  <label className="block text-xs font-bold text-mutedForeground uppercase tracking-widest">Password</label>
-                  <a href="#" className="text-xs text-primary hover:underline font-medium">Forgot password?</a>
-                </div>
+                <label className="block text-xs font-bold text-mutedForeground uppercase tracking-widest mb-2">Password</label>
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full bg-background border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-mutedForeground/50" placeholder="••••••••" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-mutedForeground uppercase tracking-widest mb-2">Role</label>
+                <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full bg-background border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all appearance-none cursor-pointer">
+                  <option value="FLEET_MANAGER">Fleet Manager</option>
+                  <option value="DISPATCHER">Dispatcher</option>
+                  <option value="SAFETY_OFFICER">Safety Officer</option>
+                  <option value="FINANCIAL_ANALYST">Financial Analyst</option>
+                </select>
               </div>
             </div>
             <button type="submit" disabled={loading} className="w-full bg-foreground text-background font-bold rounded-xl px-4 py-3.5 text-sm hover:bg-foreground/90 transition-all shadow-md active:scale-[0.98] disabled:opacity-70">
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
+            <div className="text-center mt-6">
+              <span className="text-sm text-mutedForeground">Already have an account? </span>
+              <Link to="/login" className="text-sm text-primary font-bold hover:underline">Sign in</Link>
+            </div>
           </form>
         </motion.div>
       </div>

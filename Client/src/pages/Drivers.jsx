@@ -1,29 +1,40 @@
 import PageLayout from '../components/PageLayout';
 import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Modal from '../components/Modal';
+import AddDriverForm from '../components/forms/AddDriverForm';
 
 export default function Drivers() {
   const [drivers, setDrivers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchDrivers = async () => {
+    try {
+      const response = await api.get('/drivers');
+      setDrivers(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch drivers:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDrivers = async () => {
-      try {
-        const response = await api.get('/drivers');
-        setDrivers(response.data.data);
-      } catch (error) {
-        console.error('Failed to fetch drivers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchDrivers();
   }, []);
+
+  const handleAddSuccess = () => {
+    setIsModalOpen(false);
+    fetchDrivers();
+  };
+
   return (
     <PageLayout 
-      title="Driver Management" 
-      action={<button className="bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95">+ Add Driver</button>}
+      title="Driver Roster" 
+      action={<button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95"><Plus size={16} /> Add Driver</button>}
     >
       <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="overflow-x-auto">
@@ -70,6 +81,10 @@ export default function Drivers() {
           </table>
         </div>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Register New Driver">
+        <AddDriverForm onSuccess={handleAddSuccess} onCancel={() => setIsModalOpen(false)} />
+      </Modal>
     </PageLayout>
   );
 }

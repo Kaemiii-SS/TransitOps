@@ -2,28 +2,40 @@ import PageLayout from '../components/PageLayout';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Modal from '../components/Modal';
+import AddVehicleForm from '../components/forms/AddVehicleForm';
+import { Plus } from 'lucide-react';
 
 export default function Fleet() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchVehicles = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/vehicles');
+      setVehicles(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch vehicles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchVehicles = async () => {
-      try {
-        const response = await api.get('/vehicles');
-        setVehicles(response.data.data);
-      } catch (error) {
-        console.error('Failed to fetch vehicles:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchVehicles();
   }, []);
+
+  const handleAddSuccess = () => {
+    setIsModalOpen(false);
+    fetchVehicles();
+  };
+
   return (
     <PageLayout 
       title="Fleet Management" 
-      action={<button className="bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95">+ Add Vehicle</button>}
+      action={<button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95"><Plus size={16} /> Add Vehicle</button>}
     >
       <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="overflow-x-auto">
@@ -68,6 +80,10 @@ export default function Fleet() {
           </table>
         </div>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Register New Vehicle">
+        <AddVehicleForm onSuccess={handleAddSuccess} onCancel={() => setIsModalOpen(false)} />
+      </Modal>
     </PageLayout>
   );
 }

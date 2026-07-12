@@ -1,29 +1,41 @@
 import PageLayout from '../components/PageLayout';
 import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Modal from '../components/Modal';
+import AddTripForm from '../components/forms/AddTripForm';
 
 export default function Trips() {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const fetchTrips = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/trips');
+      setTrips(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch trips:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTrips = async () => {
-      try {
-        const response = await api.get('/trips');
-        setTrips(response.data.data);
-      } catch (error) {
-        console.error('Failed to fetch trips:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTrips();
   }, []);
+
+  const handleAddSuccess = () => {
+    setIsModalOpen(false);
+    fetchTrips();
+  };
+
   return (
     <PageLayout 
-      title="Trips & Dispatch" 
-      action={<button className="bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95">+ New Trip</button>}
+      title="Dispatch Center" 
+      action={<button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95"><Plus size={16} /> New Trip</button>}
     >
       <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="overflow-x-auto">
@@ -70,6 +82,10 @@ export default function Trips() {
           </table>
         </div>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Create New Trip">
+        <AddTripForm onSuccess={handleAddSuccess} onCancel={() => setIsModalOpen(false)} />
+      </Modal>
     </PageLayout>
   );
 }

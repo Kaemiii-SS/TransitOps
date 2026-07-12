@@ -1,29 +1,54 @@
 import PageLayout from '../components/PageLayout';
 import { motion } from 'framer-motion';
+import { Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import Modal from '../components/Modal';
+import LogMaintenanceForm from '../components/forms/LogMaintenanceForm';
 
 export default function Maintenance() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [closingId, setClosingId] = useState(null);
+
+  const fetchLogs = async () => {
+    try {
+      const response = await api.get('/maintenance');
+      setLogs(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch maintenance logs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchLogs = async () => {
-      try {
-        const response = await api.get('/maintenance');
-        setLogs(response.data.data);
-      } catch (error) {
-        console.error('Failed to fetch maintenance logs:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchLogs();
   }, []);
+
+  const handleAddSuccess = () => {
+    setIsModalOpen(false);
+    fetchLogs();
+  };
+
+  const handleCloseJob = async (id) => {
+    setClosingId(id);
+    try {
+      await api.patch(`/maintenance/${id}/close`);
+      fetchLogs();
+    } catch (error) {
+      console.error('Failed to close job:', error);
+      alert('Failed to close job: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setClosingId(null);
+    }
+  };
+
   return (
     <PageLayout 
-      title="Maintenance Logs" 
-      action={<button className="bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95">+ Log Maintenance</button>}
+      title="Maintenance Workshop" 
+      action={<button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-foreground text-background font-bold px-4 py-2.5 text-sm rounded-xl hover:bg-foreground/90 transition-all shadow-md active:scale-95"><Plus size={16} /> Log Maintenance</button>}
     >
       <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
         <div className="overflow-x-auto">
@@ -64,9 +89,15 @@ export default function Maintenance() {
                     </td>
                     <td className="py-4">
                       {log.status === 'ACTIVE' ? (
-                        <button className="text-[11px] font-bold uppercase tracking-wider text-background bg-primary hover:bg-primary/90 px-3 py-1.5 rounded-md transition-colors active:scale-95">Close Job</button>
+                        <button 
+                          onClick={() => handleCloseJob(log.id)}
+                          disabled={closingId === log.id}
+                          className="text-xs font-bold bg-primary/10 text-primary px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50"
+                        >
+                          {closingId === log.id ? 'Closing...' : 'Close Job'}
+                        </button>
                       ) : (
-                        <span className="text-mutedForeground">--</span>
+                        <span className="text-xs text-mutedForeground italic">-</span>
                       )}
                     </td>
                   </motion.tr>
@@ -76,6 +107,10 @@ export default function Maintenance() {
           </table>
         </div>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Log Maintenance Issue">
+        <LogMaintenanceForm onSuccess={handleAddSuccess} onCancel={() => setIsModalOpen(false)} />
+      </Modal>
     </PageLayout>
   );
 }

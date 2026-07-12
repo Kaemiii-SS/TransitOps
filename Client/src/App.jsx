@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
-import PageLayout from './components/PageLayout';
 
 import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
@@ -12,12 +11,16 @@ import FuelExpenses from './pages/FuelExpenses';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
+import Register from './pages/Register';
+import Landing from './pages/Landing';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/*" element={
           <div className="flex min-h-screen bg-background text-foreground">
             <Sidebar />
