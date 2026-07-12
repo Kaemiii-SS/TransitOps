@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TransitOps — Dashboard</title>
+<link rel="stylesheet" href="dashboard.css">
+<style>
+
+  .layout {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------------- Sidebar ---------------- */
+  .sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border-default);
+    padding: 22px 14px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 28px 6px;
+    color: var(--text-primary);
+  }
+
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 15px;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+
+  .nav-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .nav-item.active {
+    color: var(--text-primary);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  /* ---------------- Main ---------------- */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-default);
+    gap: 16px;
+  }
+
+  .search-input {
+    flex: 1;
+    max-width: 320px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus { outline: none; border-color: var(--accent); }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .user-name {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .role-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--status-blue);
+    color: var(--status-blue);
+    border-radius: 999px;
+    padding: 5px 8px 5px 14px;
+    font-size: 13px;
+  }
+
+  .avatar-circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--status-blue);
+    color: #0b0d12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .content {
+    padding: 22px 24px 40px;
+    overflow-y: auto;
+  }
+
+  /* ---------------- Filters ---------------- */
+  .filters-label {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .filters-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+
+  .filter-select {
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    min-width: 150px;
+  }
+
+  .filter-select:focus { outline: none; border-color: var(--accent); }
+
+  /* ---------------- KPI cards ---------------- */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-left: 3px solid var(--status-blue);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+  }
+
+  .kpi-card.blue    { border-left-color: var(--status-blue); }
+  .kpi-card.green   { border-left-color: var(--status-green); }
+  .kpi-card.orange  { border-left-color: var(--status-orange); }
+
+  .kpi-label {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  /* ---------------- Panels ---------------- */
+  .panels-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+  }
+
+  .panel-title {
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin: 0 0 16px;
+    text-transform: uppercase;
+  }
+
+  /* Trips table */
+  table.trips-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .trips-table th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 400;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .trips-table td {
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--border-default);
+    color: var(--text-primary);
+  }
+
+  .trips-table tr:last-child td { border-bottom: none; }
+
+  .status-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+  }
+
+  .status-pill.on-trip     { background: var(--status-blue-soft);   color: var(--status-blue); }
+  .status-pill.completed   { background: var(--status-green-soft);  color: var(--status-green); }
+  .status-pill.dispatched  { background: var(--status-blue-soft);   color: var(--status-blue); }
+  .status-pill.draft       { background: var(--status-gray-soft);   color: var(--text-muted); }
+
+  .eta-muted { color: var(--text-muted); }
+
+  /* Vehicle status bars */
+  .status-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .status-bar-row:last-child { margin-bottom: 0; }
+
+  .status-bar-label {
+    width: 76px;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  .status-bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--border-default);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .status-bar-fill { height: 100%; border-radius: 999px; }
+
+  .status-bar-fill.available { background: var(--status-green); }
+  .status-bar-fill.on-trip   { background: var(--status-blue); }
+  .status-bar-fill.in-shop   { background: var(--status-orange); }
+  .status-bar-fill.retired   { background: var(--status-red); }
+
+  @media (max-width: 1100px) {
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .panels-row { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .sidebar { display: none; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">TransitOps</div>
+    <ul class="nav-list">
+      <li><a class="nav-item active" href="dashboard.html">Dashboard</a></li>
+      <li><a class="nav-item" href="fleet.html">Fleet</a></li>
+      <li><a class="nav-item" href="drivers.html">Drivers</a></li>
+      <li><a class="nav-item" href="trips.html">Trips</a></li>
+      <li><a class="nav-item" href="maintenance.html">Maintenance</a></li>
+      <li><a class="nav-item" href="fuel-expenses.html">Fuel &amp; Expenses</a></li>
+      <li><a class="nav-item" href="analytics.html">Analytics</a></li>
+      <li><a class="nav-item" href="settings.html">Settings</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <div class="topbar">
+      <input class="search-input" type="text" placeholder="Search...">
+      <div class="topbar-right">
+        <span class="user-name">Goodman</span>
+        <span class="role-chip">
+          Dispatcher
+          <span class="avatar-circle">SG</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="filters-label">FILTERS</div>
+      <div class="filters-row">
+        <select class="filter-select"><option>Vehicle Type: All</option></select>
+        <select class="filter-select"><option>Status: All</option></select>
+        <select class="filter-select"><option>Region: All</option></select>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card blue">
+          <div class="kpi-label">Active Vehicles</div>
+          <div class="kpi-value">53</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Available Vehicles</div>
+          <div class="kpi-value">42</div>
+        </div>
+        <div class="kpi-card orange">
+          <div class="kpi-label">Vehicles in Maintenance</div>
+          <div class="kpi-value">05</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Active Trips</div>
+          <div class="kpi-value">18</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-label">Pending Trips</div>
+          <div class="kpi-value">09</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Fleet Utilization</div>
+          <div class="kpi-value">81%</div>
+        </div>
+      </div>
+
+      <div class="panels-row">
+
+        <div class="panel">
+          <div class="panel-title">Recent Trips</div>
+          <table class="trips-table">
+            <thead>
+              <tr>
+                <th>Trip</th>
+                <th>Vehicle</th>
+                <th>Driver</th>
+                <th>Status</th>
+                <th>ETA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>TR001</td>
+                <td>VAN-05</td>
+                <td>Alex</td>
+                <td><span class="status-pill on-trip">On Trip</span></td>
+                <td>45 min</td>
+              </tr>
+              <tr>
+                <td>TR002</td>
+                <td>TRK-12</td>
+                <td>John</td>
+                <td><span class="status-pill completed">Completed</span></td>
+                <td class="eta-muted">&mdash;</td>
+              </tr>
+              <tr>
+                <td>TR003</td>
+                <td>MINI-08</td>
+                <td>Priya</td>
+                <td><span class="status-pill dispatched">Dispatched</span></td>
+                <td>1h 10m</td>
+              </tr>
+              <tr>
+                <td>TR004</td>
+                <td class="eta-muted">&mdash;</td>
+                <td class="eta-muted">&mdash;</td>
+                <td><span class="status-pill draft">Draft</span></td>
+                <td class="eta-muted">Awaiting Vehicle</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Vehicle Status</div>
+
+          <div class="status-bar-row">
+            <div class="status-bar-label">Available</div>
+            <div class="status-bar-track">
+              <div class="status-bar-fill available" style="width: 79%;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar-row">
+            <div class="status-bar-label">On Trip</div>
+            <div class="status-bar-track">
+              <div class="status-bar-fill on-trip" style="width: 34%;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar-row">
+            <div class="status-bar-label">In Shop</div>
+            <div class="status-bar-track">
+              <div class="status-bar-fill in-shop" style="width: 9%;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar-row">
+            <div class="status-bar-label">Retired</div>
+            <div class="status-bar-track">
+              <div class="status-bar-fill retired" style="width: 4%;"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
