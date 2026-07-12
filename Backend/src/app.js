@@ -11,6 +11,8 @@ import maintenanceRoutes from "./routes/maintenance.routes.js";
 import fuelRoutes from "./routes/fuel.routes.js";
 import expenseRoutes from "./routes/expense.routes.js";
 import costRoutes from "./routes/cost.routes.js";
+import analyticsRoutes from "./routes/analytics.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 const app = express();
 
@@ -32,6 +34,8 @@ app.use("/api/v1/maintenance", maintenanceRoutes);
 app.use("/api/v1/fuel-logs", fuelRoutes);
 app.use("/api/v1/expenses", expenseRoutes);
 app.use("/api/v1/vehicles", costRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
 
 app.use(errorHandler);
 
