@@ -243,5 +243,4 @@ JWTs are issued on signup/login and set as an **httpOnly cookie** — not return
 - CSV export (`/analytics/export/csv`) returns `Content-Type: text/csv`, not the standard JSON envelope — handle it as a file download on the frontend, not a parsed response.
 - PDF export was scoped out of this project; CSV is the only export format.
 
-  ### Deployed Link of the website
-https://transit-ops-henna.vercel.app/
+
