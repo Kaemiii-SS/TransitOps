@@ -244,6 +244,35 @@
     .sidebar { display: none; }
     .fleet-table { font-size: 12px; }
   }
+
+
+  .modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content{
+    background:#181818;
+    padding:30px;
+    width:450px;
+    border-radius:12px;
+}
+
+.modal-content input,
+.modal-content select{
+    width:100%;
+    margin:10px 0;
+}
+
+#closeModal{
+    float:right;
+    cursor:pointer;
+    font-size:24px;
+}
 </style>
 </head>
 <body>
@@ -286,7 +315,9 @@
         <select class="filter-select"><option>Status: All</option></select>
         <input class="reg-search" type="text" placeholder="Search reg. no...">
         <div class="spacer"></div>
-        <button class="btn-primary">+ Add Vehicle</button>
+        <button class="add-btn" id="addVehicleBtn">
+        + Add Vehicle
+        </button>
       </div>
 
       <div class="table-panel">
@@ -348,6 +379,50 @@
     </div>
   </div>
 </div>
+
+<div id="vehicleModal" class="modal">
+
+  <div class="modal-content">
+
+    <span id="closeModal">&times;</span>
+
+    <h2>Add Vehicle</h2>
+
+    <form id="vehicleForm">
+
+      <input type="text" placeholder="Registration No" required>
+
+      <input type="text" placeholder="Vehicle Name" required>
+
+      <select>
+        <option>Van</option>
+        <option>Truck</option>
+        <option>Mini</option>
+      </select>
+
+      <input type="text" placeholder="Capacity">
+
+      <input type="number" placeholder="Odometer">
+
+      <input type="number" placeholder="Cost">
+
+      <select>
+        <option>Available</option>
+        <option>On Trip</option>
+        <option>In Shop</option>
+      </select>
+
+      <button type="submit">
+          Save Vehicle
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
 
 </body>
 </html>
