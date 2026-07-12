@@ -1,9 +1,15 @@
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const app = express()
+import express from "express";
+import cookieParser from "cookie-parser";
+import prisma from "./config/db.js";
 
-app.use(express.json())
-app.use(cookieParser())
+const app = express();
 
+app.use(express.json());
+app.use(cookieParser());
 
-module.exports = app;
+app.get("/api/v1/health", async (req, res) => {
+  const userCount = await prisma.user.count();
+  res.status(200).json({ success: true, message: "Server is healthy", userCount });
+});
+
+export default app;
