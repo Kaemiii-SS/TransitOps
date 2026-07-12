@@ -2,8 +2,10 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
+import vehicleRoutes from "./routes/vehicle.routes.js"
 import { errorHandler } from "./middlewares/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
+import driverRoutes from "./routes/driver.routes.js";
 
 const app = express();
 
@@ -18,7 +20,8 @@ app.get("/api/v1/health", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
-
+app.use("/api/v1/vehicles", vehicleRoutes);
+app.use("/api/v1/drivers", driverRoutes);
 app.use(errorHandler);
 
 export { app };
